@@ -6,7 +6,7 @@
 #include "../../Array/DisjointSet.h"
 #include "../Queue.h"
 #include "../../Array/Heap/MinHeap.h"
-
+#include "vector"
 namespace list {
 
     Graph::Graph(int _vertexCount) : AbstractGraph(_vertexCount){
@@ -171,4 +171,52 @@ namespace list {
         }
     }
 
+    Path *Graph::updatedBellmanFord(int source,int to) {
+        Edge* edge;
+        Path* shortestPaths = initializePaths(source);
+        for (int i = 0; i < vertexCount - 1; i++){
+            for (int fromNode = 0; fromNode < vertexCount; fromNode++){
+                edge = edges[fromNode].getHead();
+                while (edge != nullptr){
+                    //int toNode = edge->getTo();
+                    int toNode = to;
+                    int newDistance = shortestPaths[fromNode].getDistance() + edge->getWeight();
+                    if (newDistance < shortestPaths[toNode].getDistance()){
+                        shortestPaths[toNode].setDistance(newDistance);
+                        shortestPaths[toNode].setPrevious(fromNode);
+                    }
+                    edge = edge->getNext();
+                }
+            }
+        }
+        return shortestPaths;
+    }
+    vector<int> Graph::dijkstra_(int source) {
+        vector<int> myVector(100);
+        int counter = 0;
+        Edge* edge;
+        Path* shortestPaths = initializePaths(source);
+        MinHeap heap = MinHeap(vertexCount);
+        for (int i = 0; i < vertexCount; i++){
+            heap.insert(HeapNode(shortestPaths[i].getDistance(), i));
+        }
+        while (!heap.isEmpty()){
+            HeapNode node = heap.deleteTop();
+            int fromNode = node.getName();
+            edge = edges[fromNode].getHead();
+            while (edge != nullptr){
+                int toNode = edge->getTo();
+                int newDistance = shortestPaths[fromNode].getDistance() + edge->getWeight();
+                if (newDistance < shortestPaths[toNode].getDistance()){
+                    int position = heap.search(toNode);
+                    heap.update(position, newDistance);
+                    shortestPaths[toNode].setDistance(newDistance);
+                    shortestPaths[toNode].setPrevious(fromNode);
+                    myVector.push_back(toNode);
+                }
+                edge = edge->getNext();
+            }
+        }
+        return myVector;
+    }
 }
